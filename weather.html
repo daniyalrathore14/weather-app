@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+</head>
+
+<body>
+    <h1>Weather App</h1>
+    <div class="search-container">
+        <input type="text" id="city-input" placeholder="Enter city name">
+        <button id="search-btn">Search</button>
+    </div>
+    <div id="weather-display"></div>
+    <script>
+        var button = document.getElementById('search-btn');
+        button.addEventListener('click', getCityList);
+        async function getCityList(arr) {
+            var userInput = document.getElementById("city-input").value
+            if (userInput) {
+                const response = await fetch(`http://api.openweathermap.org/geo/1.0/direct?q=${userInput}&appid=f18892d5607401d6726293935eb623ab`, {
+                    method: "GET"
+                })
+                if (response?.status === 200) {
+                    const data = await response.json()
+                    if (data?.length > 0)
+                        getWeatherDetailForCity(data[0])
+                    else alert('City not found.')
+                }
+                else
+                    alert('Please enter a valid city name!')
+            }
+            else alert("Please enter a city")
+        }
+        async function getWeatherDetailForCity(data) {
+            fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${data?.lat}&lon=${data?.lon}&appid=f18892d5607401d6726293935eb623ab`, {
+                method: "GET"
+            }).then(async (res) => {
+                if (res.status === 200) {
+                    const weatherData = await res.json()
+                    displayWeatherInformation(weatherData, data?.name)
+                }
+                else {
+                    alert('Weather record fofor this location not found!')
+                }
+            })
+                .catch(er => {
+                    alert('Network error')
+                })
+        }
+        function displayWeatherInformation(data, city) {
+            document.getElementById("weather-display").innerHTML = `<div>
+                                        <h2>City: ${city}<h2>
+                                        <h4>Location: ${data?.name}<h4>
+                                        <h4>Temperature: ${(data?.main?.temp - 273.15).toFixed(1)}<h4>
+                                        <h4>Humidity: ${data?.main?.humidity}<h4>
+                                        <h4>Max Temperature: ${(data?.main?.temp_max - 273.15).toFixed(1)}<h4>
+                                        <h4>Min Temperature: ${(data?.main?.temp_min - 273.15).toFixed(1)}<h4>
+                                        </div>`
+        }
+
+
+
+    </script>
+</body>
+
+</html>
